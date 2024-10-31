@@ -6,7 +6,8 @@ import { IoCloseCircle } from 'react-icons/io5'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { mutate } from 'swr'
-
+import utc from 'dayjs/plugin/utc'; // Import the UTC plugin
+dayjs.extend(utc);
 
 interface Props {
     isShow: boolean
@@ -36,8 +37,8 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const start = dayjs(formData.startDateTime)
-        const end = dayjs(formData.endDateTime)
+        const start = dayjs.utc(formData.startDateTime)
+        const end = dayjs.utc(formData.endDateTime)
         if (!formData.title) {
             toast.error('Title is required')
             return
@@ -50,7 +51,6 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
 
         try {
             setIsShow(false);
-            console.log("🚀 ~ handleSubmit ~ formData:", formData)
             const response = await fetch('/api/events', {
                 method: formData.id ? 'PATCH' : 'POST',
                 headers: {
@@ -84,7 +84,13 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
     };
 
     const formatDateForInput = (date: Date) => {
-        return date.toISOString().slice(0, 16);
+        date.setUTCHours(0, 0, 0, 0); 
+
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T00:00`;
     };
 
     const getDateValue = (date: Date | string) => {
@@ -92,11 +98,13 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
     };
 
     useEffect(() => {
-        data && setFormData({
-            ...data,
-            startDateTime: new Date(data.startDateTime),
-            endDateTime: new Date(data.endDateTime)
-        })
+        if (data) {
+            setFormData({
+                ...data,
+                startDateTime: new Date(data.startDateTime),
+                endDateTime: new Date(data.endDateTime)
+            })
+        }
     }, [data])
 
     return (

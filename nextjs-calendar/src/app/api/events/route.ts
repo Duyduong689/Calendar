@@ -8,6 +8,19 @@ dayjs.extend(utc);
 dayjs.extend(customParseFormat);
 dayjs.extend(advancedFormat);
 
+type EventData = {
+    id?: string;
+    title: string;
+    description: string;
+    eventType: string;
+    recurrenceType: string;
+    startDateTime: string;
+    endDateTime: string;
+    themeColor: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const year = parseInt(searchParams.get('year') || '');
@@ -43,18 +56,7 @@ export async function GET(request: Request) {
     }
 }
 
-type EventData = {
-    id?: string;
-    title: string;
-    description: string;
-    eventType: string;
-    recurrenceType: string;
-    startDateTime: string;
-    endDateTime: string;
-    themeColor: string;
-    createdAt?: string;
-    updatedAt?: string;
-};
+
 
 export async function POST(request: Request) {
     const { title, description, eventType, startDateTime, endDateTime, themeColor, recurrenceType }: EventData = await request.json();
@@ -110,7 +112,6 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
     const payload = await request.json();
-    console.log("Payload received:", payload);
     
     if (!payload) {
         return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
