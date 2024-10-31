@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB primary key 
+  title         String
+  description   String?
+  eventType     String // e.g., "meeting", "webinar", "general"
+  startDateTime DateTime // Event start time
+  endDateTime   DateTime // Event end time
+  location      String? // Optional: Location of the event
+  isAllDay      Boolean  @default(false) // Flag for all-day events
+  themeColor    String // Hex color code (e.g., "#4287f5")
+
+  // Recurrent event details (if any)
+  // recurrence   Recurrence? @relation(fields: [recurrenceId], references: [id])
+  // recurrenceId String?     @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// model Recurrence {
+//   id         String    @id @default(auto()) @map("_id") @db.ObjectId
+//   frequency  String // e.g., "daily", "weekly", "monthly"
+//   interval   Int // Interval between recurrences (e.g., every 2 weeks)
+//   daysOfWeek String[] // For weekly events: ["mon", "wed", "fri"]
+//   endDate    DateTime? // Optional: End date of the recurrence
+//   // Event Event[]
+// }
