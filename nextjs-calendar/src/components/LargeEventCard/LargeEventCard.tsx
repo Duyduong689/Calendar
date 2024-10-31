@@ -8,9 +8,10 @@ interface Props {
   event: Event
 }
 const LargeEventCard: React.FC<Props> = ({ event }) => {
+
   return (
-    <div className=" flex bg-yellow-300 rounded-md overflow-hidden">
-      <div className="emphasize w-[10px] bg-blue-800"></div>
+    <div className={`flex ${event.themeColor == "yellow" ? "bg-yellow-300" : event.themeColor === "orange" ? "bg-orange-300" : "bg-blue-300"} rounded-md overflow-hidden`}>
+      <div className={`emphasize w-[10px] ${event.themeColor != "blue" ? "bg-blue-800" : "bg-yellow-800"} `}></div>
       <div className="flex w-full gap-2 justify-between px-3 py-4">
         <div className="info flex gap-2 flex-col">
           <h2 className=" text-blue-800 font-semibold text-base line-clamp-2">{event.title}
@@ -21,15 +22,20 @@ const LargeEventCard: React.FC<Props> = ({ event }) => {
             <span>{dayjs(event.endDateTime).format("HH:mm A")}</span>
             <span>{getDateTimeWithGMT(event.startDateTime).gmtOffsetString}</span>
           </div>
-          <div className=" flex items-center gap-2">
-            <FaCircleUser className="text-xl" />
-            <Link href={"/"} className=" underline text-blue-500">View Client Profile</Link>
+          {event.eventType === "appointment"
+            &&
+            <div className=" flex items-center gap-2">
+              <FaCircleUser className="text-xl" />
+              <Link href={"/"} className=" underline text-blue-500">View Client Profile</Link>
+            </div>
+          }
+        </div>
+        {event.eventType === "appointment"
+          &&
+          <div className="icon w-[40px] h-[40px] rounded-full bg-blue-800 text-white flex items-center justify-center p-2">
+            <IoVideocamOutline className="text-2xl" />
           </div>
-
-        </div>
-        <div className="icon w-[40px] h-[40px] rounded-full bg-blue-800 text-white flex items-center justify-center p-2">
-          <IoVideocamOutline className="text-2xl" />
-        </div>
+        }
       </div>
     </div>
   )

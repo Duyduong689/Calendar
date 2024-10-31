@@ -5,16 +5,14 @@ import { CalendarDay, Event } from "@/models/calendar.types"
 import { generateCalendarDays } from "@/utils"
 import dayjs from "dayjs"
 import utc from 'dayjs/plugin/utc'; // Import the UTC plugin
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MdArrowBackIosNew, MdArrowForwardIos } from "react-icons/md"
-import useSWR from "swr"
+import useSWR, { mutate } from "swr"
 import LargeEventCard from "../LargeEventCard/LargeEventCard"
 import Spinner from "../Spinner/Spinner"
 dayjs.extend(utc);
 
 const fetchEventsByDate = async (date: Date): Promise<Event[]> => {
-  console.log("🚀 ~ fetchEventsByDate ~ date:", date)
-  console.log("🚀 ~ fetchEventsByDate ~ date2:", dayjs.utc(date).toISOString())
   const formattedDate = dayjs(date).toISOString();
   const response = await fetch(`/api/eventsByDate?date=${formattedDate}`);
   if (!response.ok) {
@@ -27,6 +25,7 @@ const SmallCalendar = () => {
   const [year, setYear] = useState(dayjs().year())
   const [month, setMonth] = useState(dayjs().month() + 1)
   const [selectedDate, SetSelectedDate] = useState(dayjs())
+  const [shouldFetch, setShouldFetch] = useState(false);
 
   const handlePrevMonth = () => {
     if (month > 1) {
@@ -56,9 +55,14 @@ const SmallCalendar = () => {
 
   const days = generateCalendarDays(year, month, 5);
 
-  const { data: events, error } = useSWR([selectedDate.toDate()], () => fetchEventsByDate(selectedDate.toDate()), {
+  const { data: events, error } = useSWR(shouldFetch ? "fetchEventsByDate" : null, () => fetchEventsByDate(selectedDate.toDate()), {
     revalidateOnFocus: false,
   });
+
+  useEffect(() => {
+    mutate("fetchEventsByDate")
+    setShouldFetch(true)
+  }, [selectedDate])
 
   if (error) return <div>Error loading events: {error.message}</div>; // Show error message
 
@@ -94,7 +98,7 @@ const SmallCalendar = () => {
               <div
                 key={index}
                 className={`calendar-cell ${day.currentMonth ? '' : ' text-gray-300 cursor-not-allowed'} py-2 flex items-start justify-center  min-h-[50px] cursor-pointer`}
-                onClick={() => SetSelectedDate(dayjs().isSame(day.date, 'day') ? dayjs() : day.date)}
+                onClick={() => { SetSelectedDate(dayjs().isSame(day.date, 'day') ? dayjs() : day.date); }}
               >
                 <div className={`${checkCurrentDate(day) ? 'text-white bg-blue-800 rounded-[50%]' : ''} ${checkSelectedDate(day) ? 'text-white bg-red-800 rounded-[50%]' : ''} flex items-center justify-center w-[30px] h-[30px]`}>
                   {day.date.date()}
@@ -119,7 +123,7 @@ const SmallCalendar = () => {
         <div className="flex gap-3 flex-col mt-4">
           {
             (!events && !error) ? <Spinner /> :
-              events && events.map((event, index) =>
+              events && events.map((event) =>
                 <LargeEventCard key={event.id} event={event} />
               )
           }

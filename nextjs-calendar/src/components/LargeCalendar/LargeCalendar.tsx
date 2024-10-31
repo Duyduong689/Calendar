@@ -5,12 +5,13 @@ import { CalendarDay, Event } from '@/models/calendar.types';
 import { generateCalendarDays } from '@/utils';
 import dayjs from 'dayjs';
 import Link from 'next/link';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
 import MonthSelection from '../MonthSelection/MonthSelection';
 import SmallEventCard from '../SmallEventCard/SmallEventCard';
 import Spinner from '../Spinner/Spinner';
+import EventForm from '../EventForm/EventForm';
 
 interface DisplayDateWithEvent {
     day: CalendarDay,
@@ -26,6 +27,9 @@ const fetchEvents = async (year: number, month: number): Promise<Event[]> => {
 const LargeCalendar: React.FC = () => {
     const [year, setYear] = useState(dayjs().year())
     const [month, setMonth] = useState(dayjs().month() + 1)
+    const [isShow, setIsShow] = useState(false)
+    const [formData, setFormData] = useState<Event>()
+    const [shouldFetch, setShouldFetch] = useState(false);
 
     const handlePrevMonth = () => {
         if (month > 1) {
@@ -54,11 +58,34 @@ const LargeCalendar: React.FC = () => {
         return dayjs().date() == day.date.date() && day.currentMonth && day.date.month() == dayjs().month() && day.date.year() == dayjs().year()
     }
 
+    const handleViewEvent = (data: Event) => {
+        setFormData(data)
+        setIsShow(true)
+    }
+
+    const handleCreateEvent = () => {
+        setFormData({
+            title: '',
+            description: '',
+            eventType: 'event',
+            recurrenceType: 'none',
+            startDateTime: new Date(),
+            endDateTime: new Date(),
+            themeColor: 'yellow',
+        })
+        setIsShow(true)
+    }
+
     const days = generateCalendarDays(year, month);
 
-    const { data: events, error } = useSWR([year, month], () => fetchEvents(year, month), {
+    const { data: events, error } = useSWR(shouldFetch ? "fetchEvents" : null, () => fetchEvents(year, month), {
         revalidateOnFocus: false,
     });
+
+    useEffect(() => {
+        mutate("fetchEvents")
+        setShouldFetch(true)
+    }, [month, year])
 
     let result: DisplayDateWithEvent[] = []
     if (error) return <div>Error loading events: {error.message}</div>;
@@ -98,6 +125,10 @@ const LargeCalendar: React.FC = () => {
                             {year}
                         </span>
                     </div>
+                    <div className='ml-2 px-3 py-1  font-semibold border-blue-800 border-2 rounded-xl w-fit cursor-pointer hover:text-white hover:bg-blue-800' onClick={handleCreateEvent}>
+                        Create Event
+                    </div>
+                    <EventForm isShow={isShow} setIsShow={setIsShow} data={formData} />
                 </div>
                 <MonthSelection setSelectedMonth={setMonth} selectedMonth={month} />
             </div>
@@ -125,9 +156,9 @@ const LargeCalendar: React.FC = () => {
                                     <div className=" flex gap-1 flex-col">
                                         {
                                             item.events && item.events.slice(0, 2).map((event, index) =>
-                                                <Fragment key={index}>
+                                                <div key={index} onClick={() => handleViewEvent(event)}>
                                                     <SmallEventCard event={event} />
-                                                </Fragment>
+                                                </div>
                                             )
                                         }
                                     </div>

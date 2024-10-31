@@ -20,13 +20,8 @@ model Event {
   eventType     String // e.g., "meeting", "webinar", "general"
   startDateTime DateTime // Event start time
   endDateTime   DateTime // Event end time
-  location      String? // Optional: Location of the event
-  isAllDay      Boolean  @default(false) // Flag for all-day events
-  themeColor    String // Hex color code (e.g., "#4287f5")
-
-  // Recurrent event details (if any)
-  // recurrence   Recurrence? @relation(fields: [recurrenceId], references: [id])
-  // recurrenceId String?     @db.ObjectId
+  themeColor    String 
+  recurrenceType String?     
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
