@@ -5,13 +5,13 @@ import { CalendarDay, Event } from '@/models/calendar.types';
 import { generateCalendarDays } from '@/utils';
 import dayjs from 'dayjs';
 import Link from 'next/link';
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
 import useSWR, { mutate } from 'swr';
+import EventForm from '../EventForm/EventForm';
 import MonthSelection from '../MonthSelection/MonthSelection';
 import SmallEventCard from '../SmallEventCard/SmallEventCard';
 import Spinner from '../Spinner/Spinner';
-import EventForm from '../EventForm/EventForm';
 
 interface DisplayDateWithEvent {
     day: CalendarDay,
@@ -87,7 +87,7 @@ const LargeCalendar: React.FC = () => {
         setShouldFetch(true)
     }, [month, year])
 
-    let result: DisplayDateWithEvent[] = []
+    const result: DisplayDateWithEvent[] = []
     if (error) return <div>Error loading events: {error.message}</div>;
     if (events) {
         days.map((day) => {
