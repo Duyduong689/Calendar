@@ -71,19 +71,19 @@ const LargeCalendar: React.FC = () => {
         () => generateCalendarDays(year, month, 5)
         , [year, month])
 
-    const { data: events, error } = useSWR(shouldFetch ? "fetchEvents" : null, () => fetchEvents(year, month), {
+    const { data: events, isValidating } = useSWR(shouldFetch ? "fetchEventsLargeCalendar" : null, () => fetchEvents(year, month), {
         revalidateOnFocus: false,
     });
 
     useEffect(() => {
-        mutate("fetchEvents")
+        mutate("fetchEventsLargeCalendar")
         setShouldFetch(true)
     }, [month, year])
 
     useEffect(() => {
         if (events) {
             setResult(() => {
-                let temp: DisplayDateWithEvent[] = []
+                const temp: DisplayDateWithEvent[] = []
                 days.map((day) => {
                     temp.push({ day, events: [] })
                 })
@@ -135,7 +135,7 @@ const LargeCalendar: React.FC = () => {
                 )}
             </div>
             {
-                !events && !error ?
+                 isValidating ?
                     <div className=' h-[82.25vh]'>
                         <Spinner />
                     </div>

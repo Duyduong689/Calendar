@@ -65,8 +65,8 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
                 toast.success('Event created successfully!')
 
                 mutate("fetchEventsByDate")
-                mutate("fetchEvents2")
-                mutate("fetchEvents")
+                mutate("fetchEventsSmallCalendar")
+                mutate("fetchEventsLargeCalendar")
 
                 setFormData({
                     title: '',

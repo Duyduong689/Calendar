@@ -54,16 +54,16 @@ const SmallCalendar = () => {
     () => generateCalendarDays(year, month, 5)
     , [year, month])
 
-  const { data: events2, error: error2 } = useSWR(shouldFetch ? "fetchEventsByDate" : null, () => fetchEventsByDate(selectedDate.toDate()), {
+  const { data: events2, isValidating: isValidating2 } = useSWR(shouldFetch ? "fetchEventsByDate" : null, () => fetchEventsByDate(selectedDate.toDate()), {
     revalidateOnFocus: false,
   });
 
-  const { data: events } = useSWR(shouldFetch ? "fetchEvents2" : null, () => fetchEvents(year, month), {
+  const { data: events } = useSWR(shouldFetch ? "fetchEventsSmallCalendar" : null, () => fetchEvents(year, month), {
     revalidateOnFocus: false,
   });
 
   useEffect(() => {
-    mutate("fetchEvents2")
+    mutate("fetchEventsSmallCalendar")
     setShouldFetch(true)
   }, [month, year])
 
@@ -75,7 +75,7 @@ const SmallCalendar = () => {
   useEffect(() => {
     if (events) {
       setResult(() => {
-        let temp: DisplayDateWithEvent[] = []
+        const temp: DisplayDateWithEvent[] = []
         days.map((day) => {
           temp.push({ day, events: [] })
         })
@@ -149,7 +149,7 @@ const SmallCalendar = () => {
         </div>
         <div className="flex gap-3 flex-col mt-4">
           {
-            (!events2 && !error2) ? <Spinner /> :
+            (isValidating2) ? <Spinner /> :
               events2 && events2.map((event) =>
                 <LargeEventCard key={event.id} event={event} />
               )
