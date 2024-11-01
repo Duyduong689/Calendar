@@ -14,12 +14,12 @@ datasource db {
 }
 
 model Event {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId // MongoDB primary key 
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId 
   title         String
   description   String?
-  eventType     String // e.g., "meeting", "webinar", "general"
-  startDateTime DateTime // Event start time
-  endDateTime   DateTime // Event end time
+  eventType     String 
+  startDateTime DateTime 
+  endDateTime   DateTime 
   themeColor    String 
   recurrenceType String?     
 
