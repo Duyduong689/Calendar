@@ -3,8 +3,6 @@ import { Event } from '@/models/calendar.types'
 import dayjs from 'dayjs'
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction, useEffect, useState } from 'react'
 import { IoCloseCircle } from 'react-icons/io5'
-import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 import { mutate } from 'swr'
 import utc from 'dayjs/plugin/utc'; // Import the UTC plugin
 dayjs.extend(utc);
@@ -42,12 +40,12 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
         const end = dayjs(formData.endDateTime)
 
         if (!formData.title) {
-            toast.error('Title is required')
+            alert('Title is required')
             return
         }
 
         if (!start.isBefore(end)) {
-            toast.error('Start date must be before end date.')
+            alert('Start date must be before end date.')
             return
         }
 
@@ -62,7 +60,7 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
             });
 
             if (response.ok) {
-                toast.success('Event created successfully!')
+                alert('Event created successfully!')
 
                 mutate("fetchEventsByDate")
                 mutate("fetchEventsSmallCalendar")
@@ -80,11 +78,11 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
             } else {
                 const errorData = await response.json();
                 console.error('Failed to create event:', errorData);
-                toast.error('Failed to create event');
+                alert('Failed to create event');
             }
         } catch (error) {
             console.error('Error creating event:', error);
-            toast.error('An error occurred. Please try again.');
+            alert('An error occurred. Please try again.');
         }
     };
 
@@ -109,7 +107,6 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
 
     return (
         <>
-            <ToastContainer />
             {
                 isShow &&
                 <div className=' fixed w-screen h-screen bg-transparent z-10 inset-0'>
