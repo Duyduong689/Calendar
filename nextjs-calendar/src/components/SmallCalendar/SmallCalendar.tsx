@@ -144,7 +144,7 @@ const SmallCalendar = () => {
         </div>
         <div className="exact-date text-xl text-gray-400 mt-3 font-semibold">
           <span>
-            {selectedDate.date() == dayjs().date() ? 'Today,' : ''} {selectedDate.date()} {monthsOfYear[month - 1].slice(0, 3)}
+            {selectedDate.date() == dayjs().date() ? 'Today,' : ''} {selectedDate.date()} {monthsOfYear[selectedDate.month()].slice(0, 3)}
           </span>
         </div>
         <div className="flex gap-3 flex-col mt-4">
