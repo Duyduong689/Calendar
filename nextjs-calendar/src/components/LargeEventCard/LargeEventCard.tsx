@@ -17,9 +17,9 @@ const LargeEventCard: React.FC<Props> = ({ event }) => {
           <h2 className=" text-blue-800 font-semibold text-base line-clamp-2">{event.title}
           </h2>
           <div className="flex items-center font-semibold gap-1 text-gray-600">
-            <span>{dayjs(event.startDateTime).format("HH:mm A")}</span>
+            <span>{dayjs(event.startDateTime).format("hh:mm A")}</span>
             {" — "}
-            <span>{dayjs(event.endDateTime).format("HH:mm A")}</span>
+            <span>{dayjs(event.endDateTime).format("hh:mm A")}</span>
             <span>{getDateTimeWithGMT(event.startDateTime).gmtOffsetString}</span>
           </div>
           {event.eventType === "appointment"

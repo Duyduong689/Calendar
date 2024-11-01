@@ -1,11 +1,12 @@
 'use client'
 
 import { daysOfWeek, monthsOfYear } from '@/constants';
-import { CalendarDay, Event } from '@/models/calendar.types';
+import { CalendarDay, Event, DisplayDateWithEvent } from '@/models/calendar.types';
+import { fetchEvents } from '@/service';
 import { generateCalendarDays } from '@/utils';
 import dayjs from 'dayjs';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
 import useSWR, { mutate } from 'swr';
 import EventForm from '../EventForm/EventForm';
@@ -13,23 +14,13 @@ import MonthSelection from '../MonthSelection/MonthSelection';
 import SmallEventCard from '../SmallEventCard/SmallEventCard';
 import Spinner from '../Spinner/Spinner';
 
-interface DisplayDateWithEvent {
-    day: CalendarDay,
-    events?: Event[]
-}
-
-const fetchEvents = async (year: number, month: number): Promise<Event[]> => {
-    const response = await fetch(`/api/events?year=${year}&month=${month}`);
-    if (!response.ok) throw new Error('Failed to fetch events');
-    return response.json();
-};
-
 const LargeCalendar: React.FC = () => {
     const [year, setYear] = useState(dayjs().year())
     const [month, setMonth] = useState(dayjs().month() + 1)
     const [isShow, setIsShow] = useState(false)
     const [formData, setFormData] = useState<Event>()
     const [shouldFetch, setShouldFetch] = useState(false);
+    const [result, setResult] = useState<DisplayDateWithEvent[]>([]);
 
     const handlePrevMonth = () => {
         if (month > 1) {
@@ -76,7 +67,9 @@ const LargeCalendar: React.FC = () => {
         setIsShow(true)
     }
 
-    const days = generateCalendarDays(year, month);
+    const days = useMemo(
+        () => generateCalendarDays(year, month, 5)
+        , [year, month])
 
     const { data: events, error } = useSWR(shouldFetch ? "fetchEvents" : null, () => fetchEvents(year, month), {
         revalidateOnFocus: false,
@@ -87,22 +80,26 @@ const LargeCalendar: React.FC = () => {
         setShouldFetch(true)
     }, [month, year])
 
-    const result: DisplayDateWithEvent[] = []
-    if (error) return <div>Error loading events: {error.message}</div>;
-    if (events) {
-        days.map((day) => {
-            result.push({ day, events: [] })
-        })
-        result.map((item, index) => {
-            events.map((event) => {
-                if (
-                    item.day.date.isSame(dayjs(event.startDateTime), 'day')
-                ) {
-                    result[index].events?.push(event)
-                }
+    useEffect(() => {
+        if (events) {
+            setResult(() => {
+                let temp: DisplayDateWithEvent[] = []
+                days.map((day) => {
+                    temp.push({ day, events: [] })
+                })
+                temp.map((item, index) => {
+                    events.map((event) => {
+                        if (
+                            item.day.date.isSame(dayjs(event.startDateTime), 'day')
+                        ) {
+                            temp[index].events?.push(event)
+                        }
+                    })
+                })
+                return [...temp]
             })
-        })
-    }
+        }
+    }, [events])
 
     return (
         <div className='bg-white rounded-md pt-3 flex flex-col'>
@@ -152,7 +149,7 @@ const LargeCalendar: React.FC = () => {
                                 <div className={`date ${checkCurrentDate(item.day) ? 'text-white bg-blue-800 rounded-[50%]' : ''} flex items-center justify-center w-[40px] h-[40px]`}>
                                     {item.day.date.date()}
                                 </div>
-                                <div className='events flex flex-col'>
+                                <div className='events flex flex-col w-full'>
                                     <div className=" flex gap-1 flex-col">
                                         {
                                             item.events && item.events.slice(0, 2).map((event, index) =>

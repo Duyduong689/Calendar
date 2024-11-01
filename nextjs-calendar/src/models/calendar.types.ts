@@ -18,5 +18,9 @@ export interface Event {
     themeColor: string; // Hex color code (e.g., "#4287f5")
     createdAt?: Date; // Date of creation
     updatedAt?: Date; // Date of last update
-  }
-  
+}
+
+export interface DisplayDateWithEvent {
+    day: CalendarDay,
+    events?: Event[]
+}

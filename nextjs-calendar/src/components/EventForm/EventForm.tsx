@@ -37,8 +37,10 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        const start = dayjs.utc(formData.startDateTime)
-        const end = dayjs.utc(formData.endDateTime)
+
+        const start = dayjs(formData.startDateTime)
+        const end = dayjs(formData.endDateTime)
+
         if (!formData.title) {
             toast.error('Title is required')
             return
@@ -61,8 +63,11 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
 
             if (response.ok) {
                 toast.success('Event created successfully!')
+
                 mutate("fetchEventsByDate")
+                mutate("fetchEvents2")
                 mutate("fetchEvents")
+
                 setFormData({
                     title: '',
                     description: '',
@@ -75,23 +80,18 @@ const EventForm: React.FC<Props> = ({ isShow, setIsShow, data }) => {
             } else {
                 const errorData = await response.json();
                 console.error('Failed to create event:', errorData);
-                alert('Failed to create event');
+                toast.error('Failed to create event');
             }
         } catch (error) {
             console.error('Error creating event:', error);
-            alert('An error occurred. Please try again.');
+            toast.error('An error occurred. Please try again.');
         }
     };
 
     const formatDateForInput = (date: Date) => {
-        date.setUTCHours(0, 0, 0, 0); 
-
-        const year = date.getUTCFullYear();
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(date.getUTCDate()).padStart(2, '0');
-
-        return `${year}-${month}-${day}T00:00`;
+        return dayjs(date).format("YYYY-MM-DDTHH:mm")
     };
+
 
     const getDateValue = (date: Date | string) => {
         return typeof date === 'string' ? date : formatDateForInput(date as Date);
