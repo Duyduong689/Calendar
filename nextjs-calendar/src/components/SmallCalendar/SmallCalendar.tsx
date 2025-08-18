@@ -1,7 +1,7 @@
 'use client'
 
 import { daysOfWeek, monthsOfYear } from "@/constants"
-import { CalendarDay, DisplayDateWithEvent } from "@/models/calendar.types"
+import { CalendarDay, DisplayDateWithEvent, Event } from "@/models/calendar.types"
 import { fetchEvents, fetchEventsByDate } from "@/service"
 import { generateCalendarDays } from "@/utils"
 import dayjs from "dayjs"
@@ -9,6 +9,7 @@ import utc from 'dayjs/plugin/utc'; // Import the UTC plugin
 import { useEffect, useMemo, useState } from "react"
 import { MdArrowBackIosNew, MdArrowForwardIos } from "react-icons/md"
 import useSWR, { mutate } from "swr"
+import EventForm from "../EventForm/EventForm"
 import LargeEventCard from "../LargeEventCard/LargeEventCard"
 import Spinner from "../Spinner/Spinner"
 dayjs.extend(utc);
@@ -19,6 +20,9 @@ const SmallCalendar = () => {
   const [selectedDate, SetSelectedDate] = useState(dayjs())
   const [shouldFetch, setShouldFetch] = useState(false);
   const [result, setResult] = useState<DisplayDateWithEvent[]>([]);
+  const [showAllEvents, setShowAllEvents] = useState(false)
+  const [isShow, setIsShow] = useState(false)
+  const [formData, setFormData] = useState<Event>()
 
   const handlePrevMonth = () => {
     if (month > 1) {
@@ -48,6 +52,15 @@ const SmallCalendar = () => {
 
   const checkHaveEvent = (item: DisplayDateWithEvent) => {
     return item.events && item.events?.length > 0
+  }
+
+  const handleShowAllEvents = () => {
+    setShowAllEvents(true)
+  }
+
+  const handleViewEvent = (data: Event) => {
+    setFormData(data)
+    setIsShow(true)
   }
 
   const days = useMemo(
@@ -138,7 +151,10 @@ const SmallCalendar = () => {
       <div className="upComing-events border-gray-300 border-t-2 px-4 py-5">
         <div className="title flex">
           <h2 className="flex-1 text-blue-800 text-2xl font-bold">Upcoming Events</h2>
-          <div className=" rounded-2xl bg-blue-800 text-white px-4 py-1 cursor-pointer h-fit">
+          <div 
+            className=" rounded-2xl bg-blue-800 text-white px-4 py-1 cursor-pointer h-fit hover:bg-blue-700"
+            onClick={handleShowAllEvents}
+          >
             View All
           </div>
         </div>
@@ -151,11 +167,49 @@ const SmallCalendar = () => {
           {
             (isValidating2) ? <Spinner /> :
               events2 && events2.map((event) =>
-                <LargeEventCard key={event.id} event={event} />
+                <div key={event.id} onClick={() => handleViewEvent(event)}>
+                  <LargeEventCard event={event} />
+                </div>
               )
           }
         </div>
       </div>
+
+      {/* Modal to show all events */}
+      {showAllEvents && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                All Events for {month}/{year}
+              </h2>
+              <button
+                onClick={() => setShowAllEvents(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <div className="space-y-3">
+              {events && events.map((event, index) => (
+                <div 
+                  key={index} 
+                  onClick={() => {
+                    handleViewEvent(event)
+                    setShowAllEvents(false)
+                  }}
+                  className="cursor-pointer"
+                >
+                  <LargeEventCard event={event} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EventForm for editing events */}
+      <EventForm isShow={isShow} setIsShow={setIsShow} data={formData} />
     </div>
   )
 }

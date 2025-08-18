@@ -21,6 +21,9 @@ const LargeCalendar: React.FC = () => {
     const [formData, setFormData] = useState<Event>()
     const [shouldFetch, setShouldFetch] = useState(false);
     const [result, setResult] = useState<DisplayDateWithEvent[]>([]);
+    const [showAllEvents, setShowAllEvents] = useState(false)
+    const [selectedDayEvents, setSelectedDayEvents] = useState<Event[]>([])
+    const [selectedDay, setSelectedDay] = useState<CalendarDay | null>(null)
 
     const handlePrevMonth = () => {
         if (month > 1) {
@@ -52,6 +55,12 @@ const LargeCalendar: React.FC = () => {
     const handleViewEvent = (data: Event) => {
         setFormData(data)
         setIsShow(true)
+    }
+
+    const handleShowAllEvents = (day: CalendarDay, events: Event[]) => {
+        setSelectedDay(day)
+        setSelectedDayEvents(events)
+        setShowAllEvents(true)
     }
 
     const handleCreateEvent = () => {
@@ -105,7 +114,7 @@ const LargeCalendar: React.FC = () => {
         <div className='bg-white rounded-md pt-3 flex flex-col'>
             <div className='filter-paging px-6 my-2 flex'>
                 <div className='text-blue-800 flex gap-3 items-center flex-1'>
-                    <div className='px-3 py-1  font-semibold border-blue-800 border-2 rounded-xl w-fit cursor-pointer' onClick={handleToday}>
+                    <div className='px-3 py-1 text-sm font-semibold border-blue-800 border-2 rounded-xl w-fit cursor-pointer hover:text-white hover:bg-blue-800' onClick={handleToday}>
                         Today
                     </div>
                     <div className=' w-[35px] flex justify-center py-2 cursor-pointer' onClick={handlePrevMonth}>
@@ -161,7 +170,12 @@ const LargeCalendar: React.FC = () => {
                                     </div>
                                     {
                                         item.events && item.events.length > 2 &&
-                                        <Link href={"/"} className='text-blue-500 cursor-pointer text-sm font-semibold ml-2 mt-1'>{item.events.length - 2} more </Link>
+                                        <div 
+                                            onClick={() => handleShowAllEvents(item.day, item.events || [])}
+                                            className='text-blue-500 cursor-pointer text-sm font-semibold ml-2 mt-1 hover:underline'
+                                        >
+                                            {item.events.length - 2} more
+                                        </div>
                                     }
                                 </div>
 
@@ -169,6 +183,39 @@ const LargeCalendar: React.FC = () => {
                         ))}
                     </div>
             }
+
+            {/* Modal to show all events for a day */}
+            {showAllEvents && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4 max-h-[80vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800">
+                                Events for {selectedDay?.date.format('MMMM D, YYYY')}
+                            </h2>
+                            <button
+                                onClick={() => setShowAllEvents(false)}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="space-y-3">
+                            {selectedDayEvents.map((event, index) => (
+                                <div 
+                                    key={index} 
+                                    onClick={() => {
+                                        handleViewEvent(event)
+                                        setShowAllEvents(false)
+                                    }}
+                                    className="cursor-pointer"
+                                >
+                                    <SmallEventCard event={event} />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div >
     )
